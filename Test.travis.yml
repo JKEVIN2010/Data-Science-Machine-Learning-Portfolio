@@ -2,10 +2,8 @@
 #The function Normalize will be used to normalize inconsistent data
 
 # Build your own `normalize()` function
-language: R
 MLnormalizefun <- function(x) {
   num <- x - min(x)
   denom <- max(x) - min(x)
   return (num/denom)
 }
-
