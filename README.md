@@ -1,37 +1,16 @@
-## Welcome to GitHub Pages
+# Welcome to my Data Science Portfolio(coded in R) importeed from https://www.kaggle.com/jkevin2010
 
-You can use the [editor on GitHub](https://github.com/JKEVIN2010/KevinMekulu.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This repository contains the Data science projects I have been working on using Data sets from www.Kaggle.com
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+My Actual portfolio on kaggle is https://www.kaggle.com/jkevin2010
 
-### Markdown
+I will also include Data forecasting projects using Time Series Analysis 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Getting Started
+In the Titanic survial project, I used a machine learning algorithm called decistion trees to predict the survival of people that were on the titanic using the provided data set
 
-```markdown
-Syntax highlighted code block
+## Acknowledgments
 
-# Header 1
-## Header 2
-### Header 3
+* Hat tip to Ben Hammer whose code I used for the project *EXPLORING HARVARD UNIVERSITY*
 
-- Bulleted
-- List
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/JKEVIN2010/KevinMekulu.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
