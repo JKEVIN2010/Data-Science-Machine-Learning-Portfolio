@@ -1,0 +1,149 @@
+---
+title: "Exploring HARVARD UNIVERSITY"
+
+Main Author: "Ben Hammer"
+
+Modified by : "Kevin Mekulu"
+
+---
+
+This RMarkdown tutorial demonstrates how you can use RMarkdown to interleave R code and results with Markdown commentary.
+
+We’ll do a couple basic examples in this tutorial, then you can Fork it (which creates an editable copy) by clicking the blue Fork button in the upper right corner, change it to your own college, and extend it.
+
+Forking this script gives you access to both the data and the computational environment, which makes getting started on it really easy.
+
+First, we'll define the college that we're exploring. You can change this by changing the myCollege variable below.
+
+```{r results="asis"}
+myCollege <- "HARVARD UNIVERSITY"
+cat(paste0("We are going to explore the US College Scorecard data on <b>", myCollege , "</b>!"))
+```
+
+Next, we'll load the libraries we need for this analysis.
+
+```{r}
+library(ggplot2) # phenomenal charting library
+library(RSQLite) # load data from the source SQLite database into R
+```
+
+Let's connect to the SQLite database & then pull out the data for the specific college.
+
+```{r results="asis"}
+db <- dbConnect(dbDriver("SQLite"), "../input/database.sqlite")
+college <- dbGetQuery(db, paste0("
+SELECT *
+FROM Scorecard
+WHERE INSTNM='", myCollege, "'"))
+cat(paste0("We have <b>", nrow(college), " rows</b> of data on <b>", myCollege, "</b>, corresponding to the years ", paste(college$Year, sep="", collapse=", "), "."))
+```
+
+*If the line above doesn't have data in it, make sure the myCollege variable is defined to be a college in the dataset - otherwise nothing below will work.*
+
+Now that we have the data for our college loaded, let's look at breaking out some of the variables by year.
+
+To get started, we'll first look at how **Undergraduate Enrollment** has changed over time. We can get this from the `UGDS` column in the data.
+
+```{r}
+ggplot(college, aes(x=Year, y=UGDS)) +
+    geom_line() +
+    geom_point(size=3) +
+    theme_light(base_size=16) +
+    ylab("Undergraduate Enrollment")
+```
+
+Another component of the data is **how much students pay to attend college**. One column representing this is `COSTT4_A`, which reflects the average annual total cost of attendance, including tuition and fees, books and supplies, and living expenses for all full-time, first-time, degree/certificate-seeking undergraduates who receive Title IV aid.
+
+```{r}
+ggplot(college, aes(x=Year, y=COSTT4_A)) +
+    geom_line() +
+    geom_point(size=3) +
+    theme_light(base_size=16) +
+    ylab("Annual Cost ($)")
+```
+
+In Duke's case, we see that the cost data was only included for the 5 most recent years and that it increased in each of those years.
+
+One item high school students pay the most attention to is the **college's admission rate**. This is captured by the `ADM_RATE` variable in the data.
+
+```{r}
+ggplot(college, aes(x=Year, y=ADM_RATE*100)) +
+    geom_line() +
+    geom_point(size=3) +
+    theme_light(base_size=16) +
+    ylab("Admission Rate (%)")
+```
+
+In Duke's case, we see that the admission rate remained stable in the first half of the decade reflected in this data and dropped substantially in the second half.
+
+The **majors students pursued** is also included in this data. For example, I received an engineering degree from Duke, which is captured in the `PCIP14` variable.
+
+```{r}
+ggplot(college, aes(x=Year, y=PCIP14*100)) +
+    geom_line() +
+    geom_point(size=3) +
+    theme_light(base_size=16) +
+    ylab("Undergrads Getting Engineering Degrees (%)")
+```
+
+Other fields represented in this data include:
+
+ - **PCIP01**: Agriculture, Agriculture Operations, and Related Sciences
+ - **PCIP03**: Natural Resources and Conservation
+ - **PCIP04**: Architecture and Related Services
+ - **PCIP05**: Area, Ethnic, Cultural, Gender, and Group Studies
+ - **PCIP09**: Communication, Journalism, and Related Programs
+ - **PCIP10**: Communications Technologies/Technicians and Support Services
+ - **PCIP11**: Computer and Information Sciences and Support Services
+ - **PCIP12**: Personal and Culinary Services
+ - **PCIP13**: Education
+ - **PCIP14**: Engineering
+ - **PCIP15**: Engineering Technologies and Engineering-Related Fields
+ - **PCIP16**: Foreign Languages, Literatures, and Linguistics
+ - **PCIP19**: Family and Consumer Sciences/Human Sciences
+ - **PCIP22**: Legal Professions and Studies
+ - **PCIP23**: English Language and Literature/Letters
+ - **PCIP24**: Liberal Arts and Sciences, General Studies and Humanities
+ - **PCIP25**: Library Science
+ - **PCIP26**: Biological and Biomedical Sciences
+ - **PCIP27**: Mathematics and Statistics
+ - **PCIP29**: Military Technologies and Applied Sciences
+ - **PCIP30**: Multi/Interdisciplinary Studies
+ - **PCIP31**: Parks, Recreation, Leisure, and Fitness Studies
+ - **PCIP38**: Philosophy and Religious Studies
+ - **PCIP39**: Theology and Religious Vocations
+ - **PCIP40**: Physical Sciences
+ - **PCIP41**: Science Technologies/Technicians
+ - **PCIP42**: Psychology
+ - **PCIP43**: Homeland Security, Law Enforcement, Firefighting and Related Protective Services
+ - **PCIP44**: Public Administration and Social Service Professions
+ - **PCIP45**: Social Sciences
+ - **PCIP46**: Construction Trades
+ - **PCIP47**: Mechanic and Repair Technologies/Technicians
+ - **PCIP48**: Precision Production
+ - **PCIP49**: Transportation and Materials Moving
+ - **PCIP50**: Visual and Performing Arts
+ - **PCIP51**: Health Professions and Related Programs
+ - **PCIP52**: Business, Management, Marketing, and Related Support Services
+ - **PCIP54**: History
+
+**Three ways to extend the graph above would be**
+
+ - change it to reflect your own major
+ - replace it with a bar chart reflecting the 10 most common majors in the most recent year
+ - look at how participation in the most common majors from the past year evolved over time
+
+# Additional Exploration Ideas
+
+I'm wrapping up this introductory explanation here. I encourage you to dive deeper into the data for your college.
+
+Some other variables you may be interested in include
+
+ - SAT/ACT score distributions of admitted students (e.g. the `SATMTMID` column contains the median math SAT scores for admitted students)
+ - Earnings distribution of students after they've graduated (e.g. `pct90_earn_wne_p10` is the top 10% earnings for students 10 years after matriculation)
+ - Demographic information (e.g. `UGDS_HISP` is the fraction of undergraduate students that are Hispanic)
+ - Average cost for families at different income levels (e.g. `NPT41_PROG` is the average costs for families earning <$30,000)
+ - Completion rates for students in different demographics
+ - and many more!
+
+*Thanks to [Anna](https://www.kaggle.com/annavictoria) for providing feedback on this*
