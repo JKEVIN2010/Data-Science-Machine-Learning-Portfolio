@@ -1,5 +1,7 @@
 #We implement the machine learning alogrithm simple 
 #linear regression on this two dimensional data set
+#In this project we investigate a potential yet hidden 
+#correlation between the price of a car and its associated mileage.
 
 #Load Colors for the scatterplot
 library(RColorBrewer)
@@ -28,7 +30,7 @@ fit$coefficients[[1]]
 #Regression line on the scatterplot
 abline(fit, col = "purple", lwd = 2)
 
-# Prediction of 100,000 miles equation
+# Price prediction of a car with100,000 miles equation
 prediction_miles <- fit$coefficients[[2]]*100 + fit$coefficients[[1]]
 
 #coefficient of determination r2
