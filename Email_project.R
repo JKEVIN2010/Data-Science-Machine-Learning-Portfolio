@@ -1,3 +1,6 @@
+# The full formal report of this project can be found at www.rpubs.com/jkevin2010/email_project
+
+
 library(openintro) #Contains the dataset email
 library(dplyr) #For data manipulation
 library(ggplot2) #For fancy plots
