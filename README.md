@@ -6,7 +6,7 @@
 This repository contains data science projects I have been working on using various datasets found on www.kaggle.com
 
 ## Table of Projects(There will be many more as my skills are increasing)
-1- Titanic Survival Prediction
-2- Spam Email Identification
-3- Digit Recognizer project using ML algorithms
-4- Price/Mileage Correlation
+### 1- Titanic Survival Prediction
+### 2- Spam Email Identification
+### 3- Digit Recognizer project using ML algorithms
+### 4- Price/Mileage Correlation
