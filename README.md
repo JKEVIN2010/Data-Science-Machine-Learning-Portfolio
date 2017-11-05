@@ -1,10 +1,12 @@
 # Welcome to my Data Science Portfolio
-# You can also check my competition codes in my kaggle profile at https://www.kaggle.com/jkevin2010
+# My portfolio with full reports(still working on it) can be found at www.rpubs.com/jkevin2010
+# You can also check my competition codes(still working on it) in my kaggle profile at https://www.kaggle.com/jkevin2010
+
 
 This repository contains data science projects I have been working on using various datasets found on www.kaggle.com
 
-## Getting Started
-In the Titanic survial project, I used two different prediction models to predict survival rates. I used a machine learning algorithm called decision trees to predict the survival of people that were on the titanic using the provided data set accessible on www.kaggle.com
-
-
-
+## Table of Projects(There will be many more as my skills are increasing)
+1- Titanic Survival Prediction
+2- Spam Email Identification
+3- Digit Recognizer project using ML algorithms
+4- Price/Mileage Correlation
