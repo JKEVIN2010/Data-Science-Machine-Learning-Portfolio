@@ -1,0 +1,272 @@
+---
+title: "United Nations Voting Trends Analysis"
+author: "Kevin Mekulu"
+date: "November 2, 2017"
+output: html_document
+---
+#ABSTRACT:
+There are lots of factors that influenced voting trends at the United Nations Council let's analyze those voting trends and build simple regression models to analyze the overall voting trends which will allow to answer some hidden questions.
+
+```{r setup, include=FALSE, warning = FALSE}
+library(dplyr)
+```
+##1.1 Import Data Analysis
+we start by importing the data set and output the data 
+to get an overall idea of the type of data we are dealing
+with. Then we filter important features in the data such as the name of the countries and their voting percentages(Yes or No)
+```{r, include=TRUE, warning = F}
+votes <- readRDS("C:/Users/jkevi_000/Downloads/votes.rds")
+# Print the votes dataset
+print(votes)
+
+
+
+# Filter for votes that are "yes", "abstain", or "no"
+votes %>% filter(vote <= 3)
+
+# Add another %>% step to add a year column
+votes %>%
+  filter(vote <= 3) %>%
+  mutate(year = 1945 + session)
+
+# Load the countrycode package
+library(countrycode)
+
+
+# Convert country code 100
+countrycode(100, "cown", "country.name")
+
+
+# Add a country column within the mutate: votes_processed
+votes_processed <- votes %>%
+  filter(vote <= 3) %>%
+  mutate(year = session + 1945, 
+            country = countrycode(ccode, "cown", "country.name"))
+
+# Print votes_processed
+head(votes_processed)
+
+
+
+# Find total and fraction of "yes" votes
+votes_processed %>% summarize(total = n(),
+                              percent_yes = mean(vote == 1))
+
+# Change this code to summarize by year
+votes_processed %>%
+group_by(year) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1)) 
+
+# Summarize by country: by_country
+by_country <- votes_processed %>%
+  group_by(country) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+
+# You have the votes summarized by country
+by_country <- votes_processed %>%
+  group_by(country) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+
+# Print the by_country dataset
+head(by_country)
+
+
+# Sort in ascending order of percent_yes
+by_country %>% arrange(percent_yes)
+
+# Now sort in descending order
+by_country %>% arrange(desc(percent_yes))
+
+# Filter out countries with fewer than 100 votes
+by_country %>%
+  arrange(percent_yes) %>%
+  filter(total >= 100)
+
+# Define by_year
+by_year <- votes_processed %>%
+  group_by(year) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+```
+##1.2 Data Visualization
+This will be the most important step of our data exploration.Let's take a look at a few plots of the voting trends of different countries, especially the percentage of "Yes" votes amongst different countries over time and see what hypothesis we can infer from those graphs.
+```{r, include=TRUE, warning=FALSE}
+
+
+# Load the ggplot2 package
+library(ggplot2)
+
+# Create line plot
+ggplot(by_year, aes(x = year, y = percent_yes))+
+  geom_line()
+
+# Change to scatter plot and add smoothing curve
+ggplot(by_year, aes(year, percent_yes)) +
+  geom_point() + geom_smooth()
+```
+Now lets turn our attention to voting trends observed in specific countries rather than the overall voting trend. We will start by looking at the trend for the United Kingdom then pick a few other countries as well.
+
+```{r, include=TRUE, warning=FALSE}
+
+# Group by year and country: by_year_country
+by_year_country <- votes_processed %>%
+  group_by(year, country) %>%
+  summarize(total = n(),
+            percent_yes = mean(vote == 1))
+
+
+# Print by_year_country
+head(by_year_country)
+
+# Create a filtered version: FR_by_year
+FR_by_year <- by_year_country %>%
+  filter(country == "France")
+
+# Line plot of percent_yes over time for France only
+ggplot(FR_by_year, aes(year, percent_yes)) +
+  geom_line()
+
+# Vector of four countries to examine
+countries <- c("United States of America", "Cameroon",
+               "France", "India")
+
+# Filter by_year_country: filtered_4_countries
+filtered_4_countries <- by_year_country %>%
+  filter(country %in% countries)
+
+
+# Line plot of % yes in four countries
+ggplot(filtered_4_countries, aes(x = year, y = percent_yes, color = country)) +
+  geom_line()
+
+# Vector of six countries to examine
+countries <- c("United States", "Cameroon",
+               "France", "Japan", "Brazil", "India")
+
+# Filtered by_year_country: filtered_6_countries
+filtered_6_countries <- by_year_country %>% 
+                                filter(country %in% countries)
+
+
+
+# Vector of six countries to examine
+countries <- c("United States", "Cameroon",
+               "France", "Japan", "Brazil", "India")
+
+# Filtered by_year_country: filtered_6_countries
+filtered_6_countries <- by_year_country %>%
+  filter(country %in% countries)
+
+# Line plot of % yes over time faceted by country
+ggplot(filtered_6_countries, aes(year, percent_yes)) +
+  geom_line() +
+  facet_wrap(~ country, scales = "free_y")
+
+```
+
+##1.3 Predicitve Modelling Using Linear Regression MOdels
+We will use a linear regression model in order to examine how one variable changes with respect to another by fitting a best fit line. In this specific case we will use our regression line to describe the association between the percentage of "Yes" votes by different countries over time.
+
+```{r, include=TRUE,warning=FALSE}
+
+# Load the broom package
+library(broom)
+
+# Linear regression of percent_yes by year for US
+US_by_year <- by_year_country %>%
+  filter(country == "United States of America")
+US_fit <- lm(percent_yes ~ year, US_by_year)
+summary(US_fit)
+```
+The estimated slope of our model is -0.006 meaning that the percentage of yes votes by the United States has decreased  by a factor of 0.006 over the years. Now we could dig a little deeper to find out why but we don't have enough data to answer that question. But to verify wether or not the trend is due to chance let's look at the p-value which is 1.37*10^(-07) <<< 0.05 so clearly our model is significant.
+
+
+```{r,include=TRUE,warning=FALSE}
+
+# Create US_tidied 
+US_tidied <- tidy(US_fit)
+```
+##1.4 Deploying Linear Regression Models for Multiple Countries
+Applying linear regression to individual countries would take us forever instead, let's deploy our model for multiple countries in one go.
+
+
+```{r, include=TRUE, warning=TRUE}
+
+# Load the tidyr package
+library(tidyr)
+
+# Nest all columns besides country
+nested<- by_year_country %>% group_by(country) %>% nest()
+
+
+# Unnest the data column to return it to its original form
+unnest(nested)
+
+#Perform Linear Regression on each nested data frame
+# Load tidyr and purrr
+library(tidyr)
+library(purrr)
+
+
+
+# Perform a linear regression on each item in the data column
+  nested %>% mutate(model = map(data, ~lm(percent_yes ~ year, data = .)))
+  
+# Load the broom package
+library(broom)
+
+
+# Add another mutate that applies tidy() to each model
+  nested %>% mutate(model = map(data, ~ lm(percent_yes ~ year, data = .)))%>%
+  mutate(tidied = map(model,tidy))
+
+# Add one more step that unnests the tidied column
+country_coefficients <- nested %>%
+  mutate(model = map(data, ~ lm(percent_yes ~ year, data = .)),
+         tidied = map(model, tidy)) %>%
+         unnest(tidied)
+
+# Print the resulting country_coefficients variable
+head(country_coefficients)
+
+# Print the country_coefficients dataset
+head(country_coefficients)
+
+
+# Filter for only the slope terms
+country_coefficients %>% filter(term == "year")
+```
+Now let's filter significant countries only by using our p-value strategy(p-value < 0.05)
+```{r,include=TRUE,warning=FALSE}
+
+# Filter for only the slope terms
+slope_terms <- country_coefficients %>%
+  filter(term == "year")
+
+# Add p.adjusted column, then filter
+slope_terms %>% mutate(p.adjusted = p.adjust(p.value) )
+
+# Filter by adjusted p-values
+filtered_countries <- country_coefficients %>%
+  filter(term == "year") %>%
+  mutate(p.adjusted = p.adjust(p.value)) %>%
+  filter(p.adjusted < .05)
+```
+Now let's look at the countries where the percentage of "Yes" votes increases the fastest.
+```{r,include=TRUE,warning=FALSE}
+
+# Sort for the countries increasing most quickly
+filtered_countries %>% arrange(desc(estimate))
+```
+Now lets look at the countries where the percentage of "Yes" votes decreases the fastest
+```{r,include=TRUE,warning=FALSE}
+
+
+# Sort for the countries decreasing most quickly
+filtered_countries %>% arrange(estimate)
+```
+#2- Conclusion
+Using our simple linear regression model we were able to significantly observed voting trends during United Nations voting councils. We could further our analysis by merging new datasets with new information about specific factors that would push a country to vote yes and also make use of state-of-art machine learning algorithm for more accurate trend analysis.
