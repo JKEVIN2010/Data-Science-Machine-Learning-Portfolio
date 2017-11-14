@@ -11,3 +11,4 @@ This repository contains data science projects I have been working on using vari
 ### 3- Digit Recognizer project using ML algorithms
 ### 4- Price/Mileage Correlation
 ### 5- United Nations Voting Trend Analysis
+### 6- Handwritten digits prediction using Neural Networks and SVM
