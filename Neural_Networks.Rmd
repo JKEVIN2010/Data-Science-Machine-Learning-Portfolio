@@ -1,0 +1,270 @@
+---
+title: "Machine Learning and Neural Networks Algorithms on handwritten digits"
+author: "Kevin Mekulu"
+date: "November 14, 2017"
+output:
+  html_document: default
+  word_document: default
+---
+##Abstract: 
+We study the accuracy of a variety machine learning and deep learning algorithms on the handwritten digits' dataset.
+
+#1-Logistic Regression on Handwritten Digits
+
+```{r setup, include=TRUE}
+
+
+
+load("C:/Users/jkevi_000/Downloads/zip.79.RData")
+
+
+#Logistic Regression
+fit.glm <- glm(V1~.,data = dat$train, family = "binomial")
+
+pred <- ifelse(predict(fit.glm,dat$test,type="response") < 0.5,7,9)
+
+#Confusion Matrix
+confmat.test <- table(pred, dat$test[,1])
+
+print(confmat.test)
+
+#Misclassification Rate
+misrate.test <- sum(pred != dat$test[,1])/length(dat$test[,1])
+
+print(misrate.test) 
+
+```
+#2- LASSO Regression
+
+```{r include = TRUE}
+#Lasso Regression
+library(glmnet)
+
+fit.lasso <- glmnet(as.matrix(dat$train[,-1]),dat$train[,1],family='binomial')
+
+plot(fit.lasso$lambda, fit.lasso$cvm, log='x', type='b', xlab=expression(lambda), ylab="CV misclassification error")
+
+lambda.df <- as.data.frame(fit.lasso$lambda)
+
+best.lambda <- which(lambda.df[,1] == min(lambda.df)) #best.lambda = 100
+
+min(lambda.df) 
+```
+
+The Cross-validation misclassification rate for lambda = 100 is 3.156542 * 10^(-5)!!!!!!!
+In the plot we see that for lambda = 100, we have a very low misclassification error
+which is around 3.156542 * 10^(-5) so the best is 100. We managed to obtain a much lower misclassification rate using the Lasso regression which seems to outperform the regular logistic regression in this case.
+
+
+#-3 Neural Networks on handwritten digits
+
+
+```{r,include=TRUE,results='hide'}
+
+
+load("C:/Users/jkevi_000/Downloads/zip.RData")
+
+library(nnet)
+
+set.seed(10)
+
+#We choose 50 pixels in the data set with the largest variance
+sds <- apply(dat$train[,-1], 2, sd)
+
+ind <- order(sds, decreasing = TRUE)[1:50]
+
+new.train <- dat$train[,c(1,ind + 1)]
+
+new.test <- dat$test[,c(1,ind + 1)]
+
+set.seed(10)
+
+digit.nnet <- nnet(V1~., data=new.train, size = 5, rang=0.1, decay=5e-4, maxit=200)
+
+y.hat <- predict(digit.nnet,new.test, type = "class")
+
+
+misrate.test <- sum(y.hat != new.test[,1])/length(new.test[,1]) 
+
+print(misrate.test)
+
+table(y.hat,new.test[,1]) #Confusion Matrix
+   
+
+
+```
+Here we use neural networks with multiple seeds and see how the testing error behaves graphically.
+```{r include=TRUE,results='hide'}
+
+
+set.seed(100)
+
+seeds <- sample(1:1000, 10, replace=F)
+
+misrate.test <- rep(0,10)
+
+
+for(i in 1:10){
+  
+  set.seed(seeds[i])
+  
+  digit.nnet <- nnet(V1~., data=new.train, size = 5, rang=0.1, decay=5e-4, maxit=10000)
+  
+  y.hat <- predict(digit.nnet,new.test, type = "class")
+  
+  misrate.test[i] <- sum(y.hat != new.test[,1])/length(new.test[,1])
+  
+  
+}
+
+plot(misrate.test)
+#We can clearly see from the plot that we get different misclassification rates
+#For different seeds.
+
+
+niter <- c(5,25,35,45,55,65,75,85,95,400)*2
+
+misrate.test <- rep(0,10)
+
+for(i in 1:10){
+  set.seed(10)
+  
+  digit.nnet <- nnet(V1~., data=new.train, size = 5, rang=0.1, decay=5e-4, maxit = niter[i])
+  
+  y.hat <- as.numeric(predict(digit.nnet,new.test, type = "class"))
+  
+  misrate.test[i] <- sum(y.hat != new.test[,1])/length(new.test[,1])
+}
+plot(niter,misrate.test, xlab = "Number of iterations", ylab = "testing error")
+
+
+#We can clearly see that as the number of iterations increases, the test error is 
+#increasing as well between 0 and 200 iterations and then decreases between 200 and 800
+#iterations
+
+
+seeds <- sample(1:1000, 10, replace=F)
+
+misrate.test <- rep(0,10)
+
+temp <- rep(0,10)
+
+
+for (j in 1:10){
+  for (i in 1:10){
+    set.seed(seeds[i])
+    
+    digit.nnet <- nnet(V1 ~.,data=new.train,entropy=T,size=j,decay=0,maxit=100,trace=T)
+    
+    y.hat <- predict(digit.nnet,new.test, type = "class")
+    
+    temp[i] = sum(y.hat != new.test[,1])/length(new.test[,1])
+  }
+  misrate.test[j]=mean(temp)
+}
+plot(misrate.test,xlab='number of hidden nodes')
+
+
+
+
+```
+The network with 3 hidden nodes seems to be the best according to the plot.
+
+#4- SVM on Handwritten Digits
+```{r include=TRUE}
+
+
+
+load("C:/Users/jkevi_000/Downloads/zip.RData")
+
+library(e1071)
+
+costt = c(0.1,1,10,100,1000,1e4,1e5)
+
+nsupport=rep(0,7)
+
+for (i in 1:7){
+  mysvm <- svm(V1 ~., data=dat$train, kernel="linear", cost=costt[i],scale=FALSE)
+  
+  nsupport[i] = nrow(mysvm$SV)
+}
+plot(costt,nsupport,log='x')
+
+
+costt <- c(0.001,0.01,0.1,1,10,100,1000,1e4,1e5)
+
+set.seed(100)
+
+ind <- sample(1:5, nrow(dat$train), replace=TRUE)
+
+CVerror <- rep(0,9)
+
+for (i in 1:9){
+  for (j in 1:5){
+    mysvm <- svm(V1 ~., data=dat$train[ind != j,], kernel="linear", cost=costt[i],scale=FALSE)
+    
+    mupredict=predict(mysvm,dat$train[ind == j,])
+    
+    CVerror[i]=CVerror[i] + sum(mupredict!= dat$train[ind==j, 1])
+  }
+}
+CVerror <- CVerror/nrow(dat$train)
+
+plot(costt,CVerror,log='x')
+
+#From the plot, we can clearly see that the lowest cv error happens when the cost = 10^(-3)
+
+
+mysvm <- svm(V1 ~., data=dat$train, kernel="linear", cost=0.01,scale=FALSE)
+
+mypredict=predict(mysvm,dat$test)
+
+table(mypredict,dat$test[,1])
+
+
+errorrate <- sum(mypredict != dat$test[,1]) / length(dat$test[,1]) 
+
+
+err94 <- which(mypredict==4&dat$test[,1]==9) 
+
+err97 <- which(mypredict==7&dat$test[,1]==9) 
+
+err47 <-which(mypredict==7&dat$test[,1]==4) 
+
+err49 <-which(mypredict==9&dat$test[,1]==4) 
+
+conv.image <- function(vec)
+{
+  mat <- matrix(as.numeric(vec), nrow=16, ncol=16)
+  mat <- -mat[, 16:1]
+  par(mar=c(0, 0, 0, 0))
+  image(mat, col = gray(seq(0,1,0.01)), xaxt='n', yaxt='n')
+}
+
+x11()
+layout(matrix(1:5,nrow=1,byrow=TRUE))
+for (i in 1:length(err94)){
+  conv.image(dat$test[err94[i],-1])
+}
+
+x11()
+layout(matrix(1:2,nrow=1,byrow=TRUE))
+for (i in 1:length(err97)){
+  conv.image(dat$test[err97[i],-1])
+}
+
+x11()
+layout(matrix(1:1,nrow=1,byrow=TRUE))
+for (i in 1:length(err47)){
+  conv.image(dat$test[err47[i],-1])
+}
+
+x11()
+layout(matrix(1:8,nrow=1,byrow=TRUE))
+for (i in 1:length(err49)){
+  conv.image(dat$test[err49[i],-1])
+}
+```
+It's very hard to classify them into the right class with bare eyes because
+The digits are not very clear we can only classify 3 or 4 digits with our bare eyes
+
