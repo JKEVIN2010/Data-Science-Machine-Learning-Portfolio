@@ -12,3 +12,4 @@ This repository contains data science projects I have been working on using vari
 ### 4- Price/Mileage Correlation
 ### 5- United Nations Voting Trend Analysis
 ### 6- Handwritten digits prediction using Neural Networks and SVM
+### 7- Profits prediction using Ensemble Methods
