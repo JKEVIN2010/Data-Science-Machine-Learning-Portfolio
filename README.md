@@ -14,3 +14,4 @@ This repository contains data science projects I have been working on using vari
 ### 6- Handwritten digits prediction using Neural Networks and SVM
 ### 7- Profits prediction using Ensemble Methods
 ### 8- Profits Prediction
+### 9- Big Mart Sales Prediction
